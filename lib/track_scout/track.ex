@@ -38,7 +38,7 @@ defmodule Musikbot.TrackScout.Track do
     end
   end
 
-  @spec get_track_from_soundcloud(number) :: String.t()
+  @spec get_track_from_soundcloud(number) :: Map.t()
   def get_track_from_soundcloud(track_id) do
     headers = [
       params: [client_id: Application.get_env(:musikbot, :soundcloud)[:client_id]]
@@ -51,18 +51,29 @@ defmodule Musikbot.TrackScout.Track do
 
     case response do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-        track =
-          body
-          |> Poison.decode!()
-          |> Map.take(@expected_fields)
-
-        {:ok, track}
+        body
+        |> Poison.decode!()
+        |> Map.take(@expected_fields)
 
       {:error, %HTTPoison.Response{status_code: 404, body: _body}} ->
-        {:not_found}
+        raise :track_not_found
 
       {:error, %HTTPoison.Response{status_code: 403, body: _body}} ->
-        {:forbidden}
+        raise :forbidden
+
+      otherwise ->
+        raise otherwise
     end
+  end
+
+  @spec get_track_with_stream_url(String.t()) :: Map.t()
+  def get_track_with_stream_url(track_id) do
+    track =
+      track_id
+      |> get_track_from_soundcloud()
+
+    track
+    |> get_transcoding()
+    |> put_stream_url_to_map(track)
   end
 end

@@ -25,7 +25,7 @@ defmodule Musikbot.TrackScout.TrackTest do
         get: fn _api, _headers, _opts ->
           {:ok, %HTTPoison.Response{status_code: 200, body: success_response}}
         end do
-          {:ok, %{"id" => id, "permalink_url" => permalink_url}} = Musikbot.TrackScout.Track.get_track_from_soundcloud(7000)
+          %{"id" => id, "permalink_url" => permalink_url} = Musikbot.TrackScout.Track.get_track_from_soundcloud(7000)
           assert id == "7000"
           assert permalink_url== "https://soundcloud.com/track/7000"
         end
