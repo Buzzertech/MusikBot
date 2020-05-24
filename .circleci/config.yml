@@ -39,3 +39,8 @@ jobs:
 
       - store_test_results:
           path: _build/test/lib/musikbot
+workflows:
+  version: 2
+  build:
+    jobs:
+      - test
