@@ -10,9 +10,9 @@ defmodule Musikbot.Application do
     children = [
       # Starts a worker by calling: Musikbot.Worker.start_link(arg)
       # {Musikbot.Worker, arg},
-      {Musikbot.Producer, 0},
-      {Musikbot.ProducerConsumer, []},
-      {Musikbot.Consumer, []}
+      # {Musikbot.Producer, 0},
+      # {Musikbot.ProducerConsumer, []},
+      # {Musikbot.Consumer, []}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

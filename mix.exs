@@ -24,7 +24,9 @@ defmodule Musikbot.MixProject do
   defp deps do
     [
       {:gen_stage, "~> 1.0.0"},
-      {:httpoison, "~> 1.6"}
+      {:httpoison, "~> 1.6"},
+      {:mock, "~> 0.3.0", only: [:test, :ci]},
+      {:poison, "~> 3.1"}
     ]
   end
 end
