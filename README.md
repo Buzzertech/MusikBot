@@ -1,6 +1,6 @@
 # MusikBot
 
-This is an elixir/erlang rewrite of my project, (DatSongBot)[https://github.com/buzzertech/datsongbot], which is originally written in TypeScript and runs on NodeJS.
+This is an elixir/erlang rewrite of my project, [DatSongBot](https://github.com/buzzertech/datsongbot), which is originally written in TypeScript and runs on NodeJS.
 
 ## Why a rewrite?
 Well, it boils down to two things:
