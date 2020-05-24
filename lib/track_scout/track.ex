@@ -56,13 +56,13 @@ defmodule Musikbot.TrackScout.Track do
         |> Map.take(@expected_fields)
 
       {:error, %HTTPoison.Response{status_code: 404, body: _body}} ->
-        raise :track_not_found
+        raise "Track not found"
 
       {:error, %HTTPoison.Response{status_code: 403, body: _body}} ->
-        raise :forbidden
+        raise "Access forbidden"
 
       otherwise ->
-        raise otherwise
+        raise "Something went wrong while fetching track #{track_id}"
     end
   end
 

@@ -30,5 +30,16 @@ defmodule Musikbot.TrackScout.TrackTest do
           assert permalink_url== "https://soundcloud.com/track/7000"
         end
     end
+
+    test "should raise an exception if track wasn't found" do
+      with_mock HTTPoison,
+        get: fn _api, _headers, _opts ->
+          {:error, %HTTPoison.Response{status_code: 404, body: nil}}
+        end do
+          assert_raise RuntimeError, fn ->
+            Musikbot.TrackScout.Track.get_track_from_soundcloud(7000)
+          end
+        end
+    end
   end
 end
