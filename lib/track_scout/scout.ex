@@ -1,4 +1,4 @@
-defmodule Musikbot.Scout do
+defmodule Musikbot.TrackScout do
   use GenStage
 
   def start_link(initial \\ []) do

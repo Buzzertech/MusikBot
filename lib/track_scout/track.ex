@@ -1,4 +1,4 @@
-defmodule Musikbot.Track do
+defmodule Musikbot.TrackScout.Track do
   use HTTPoison.Base
 
   defstruct [:id, :stream_url, :user, :title, :tag_list, :duration]
@@ -11,9 +11,24 @@ defmodule Musikbot.Track do
 
   defp put_stream_url_to_map(stream_url, map), do: map |> Map.put(:stream_url, stream_url)
 
+  defp get_headers(), do: [
+    "params": ["client_id": Application.get_env(:musikbot, :soundcloud)[:client_id]]
+  ]
+
   @spec get_transcoding(number) :: String.t()
   def get_transcoding(track) do
+    headers = get_headers()
 
+    response = track |> Map.get(:id) |> HTTPoison.get(header, [recv_timeout: 5000])
+
+    case response do
+      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+        body
+        |> Poison.decode!()
+        |> Map.get("url")
+      {:error, error_data} ->
+        raise error_data
+    end
   end
 
   @spec get_track_from_soundcloud(number) :: String.t()
