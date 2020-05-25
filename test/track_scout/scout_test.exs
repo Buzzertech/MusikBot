@@ -61,5 +61,14 @@ defmodule Musikbot.TrackScout.ScoutTest do
         assert track == expected_result
       end
     end
+
+    test "should handle failures with retries and return the error post exhaustion of retry limit" do
+      with_mock HTTPoison,
+        get: fn _api, _headers, _opts ->
+          {:error, "Not found"}
+        end do
+          assert {:error, "Unable to fetch track"} == Scout.get_random_track()
+        end
+    end
   end
 end
