@@ -1,50 +1,59 @@
-defmodule Musikbot.Track do
-  use HTTPoison.Base
-
-  defstruct [:id, :stream_url, :user, :title, :tag_list, :duration]
-
+defmodule Musikbot.TrackScout.Track do
   @expected_fields ~w(
-    id user title tag_list duration
+    id user title tags_list duration permalink_url stream_url
   )
 
-  defp get_track_api_path(track_id), do: "#{Application.get_env(:musikbot, :soundcloud)[:get_track_api]}/#{track_id}"
+  defp get_soundcloud_api(url),
+    do: "#{Application.get_env(:musikbot, :soundcloud)[:origin]}#{url}"
 
-  defp put_stream_url_to_map(stream_url, map), do: map |> Map.put(:stream_url, stream_url)
+  defp get_track_api_path(), do:
+      Application.get_env(:musikbot, :soundcloud)[:get_track_api] |> get_soundcloud_api()
 
-  @spec get_transcoding(number) :: String.t()
-  def get_transcoding(track) do
+  defp put_stream_url_to_map(stream_url, map), do: map |> Map.put("stream_url", stream_url)
 
-  end
-
-  @spec get_track_from_soundcloud(number) :: String.t()
-  def get_track_from_soundcloud(track_id) do
-    headers = [
-      "params": ["client_id": Application.get_env(:musikbot, :soundcloud)[:client_id]]
-    ]
-
-    response = track_id
-      |> get_track_api_path()
-      |> Musikbot.Track.get()
-
-    case response do
-      {:ok, %HTTPoison.Response{status_code: 200, "body": body }} ->
-        track = body
-          |> get_transcoding()
-          |> put_stream_url_to_map(body)
-        {:ok, track}
-      {:error, %HTTPoison.Response{status_code: 404, "body": _body}} ->
-        {:not_found}
-      {:error, %HTTPoison.Response{status_code: 403, "body": _body}} ->
-        {:forbidden}
+  defp is_suitable_transcoding(%{ "format" => format }) do
+    case format do
+      %{"protocol" => "progressive", "mime_type" => "audio/mpeg"} ->
+        true
+      _ ->
+        false
     end
   end
 
-  def process_request_url(url), do: "#{Application.get_env(:musikbot, :soundcloud)[:origin]}#{url}"
+  defp add_stream_url_from_transcodings(track) do
+    track
+    |> Map.get("media")
+    |> Map.get("transcodings", [])
+    |> Enum.find(&is_suitable_transcoding/1)
+    |> Map.get("url")
+    |> put_stream_url_to_map(track)
+  end
 
-  def process_response_body(body) do
-    body
-    |> Poison.decode!()
-    |> Map.take(@expected_fields)
-    |> Enum.map(fn({k, v}) -> {String.to_atom(k), v} end)
+  @spec get_track_from_soundcloud(number) :: Map.t()
+  def get_track_from_soundcloud(track_id) do
+    headers = [
+      params: [
+        ids: [track_id],
+        client_id: Application.get_env(:musikbot, :soundcloud)[:client_id]
+      ]
+    ]
+
+    response =
+      get_track_api_path()
+      |> HTTPoison.get(headers, [])
+
+    case response do
+      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+        track = body
+        |> Poison.decode!()
+        |> Enum.at(0)
+        |> add_stream_url_from_transcodings()
+        |> Map.take(@expected_fields)
+
+        {:ok, track}
+
+      _ ->
+        {:error, "Something went wrong while fetching track #{track_id}"}
+    end
   end
 end

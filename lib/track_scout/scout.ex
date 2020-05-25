@@ -1,16 +1,21 @@
-defmodule Musikbot.Scout do
-  use GenStage
+defmodule Musikbot.TrackScout.Scout do
+  alias Musikbot.TrackScout.{Track}
 
-  def start_link(initial \\ []) do
-    GenStage.start_link(__MODULE__, initial, name: __MODULE__)
-  end
+  @max_track_id 784_514_266
 
-  def init(counter) do
-    {:producer, counter}
-  end
+  def get_random_track(retry \\ 3) do
+    if retry <= 0 do
+      {:error, "Unable to fetch track"}
+    else
+      random_track_id = 0..@max_track_id |> Enum.random()
 
-  def handle_demand(demand, state) do
-    events = Enum.to_list(state..(state + demand - 1))
-    {:noreply, events, state + demand}
+      case Track.get_track_from_soundcloud(random_track_id) do
+        {:ok, track} ->
+          {:ok, track}
+
+        {:error, _} ->
+          get_random_track(retry - 1)
+      end
+    end
   end
 end
