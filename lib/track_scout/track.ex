@@ -1,6 +1,6 @@
 defmodule Musikbot.TrackScout.Track do
   @expected_fields ~w(
-    id user title tag_list duration permalink_url media
+    id user title tags_list duration permalink_url stream_url
   )
 
   defp get_soundcloud_api(url),
@@ -47,8 +47,8 @@ defmodule Musikbot.TrackScout.Track do
         track = body
         |> Poison.decode!()
         |> Enum.at(0)
-        |> Map.take(@expected_fields)
         |> add_stream_url_from_transcodings()
+        |> Map.take(@expected_fields)
 
         {:ok, track}
 
