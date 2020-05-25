@@ -7,11 +7,26 @@ defmodule Musikbot.TrackScout.TrackTest do
 
   describe "get_track_from_soundcloud" do
     setup do
+      transcoding = %{
+        "url" => "https://example-stream.com/",
+        "preset" => "mp3_0_1",
+        "duration" => 139_886,
+        "snipped" => false,
+        "format" => %{
+          "protocol" => "progressive",
+          "mime_type" => "audio/mpeg"
+        },
+        "quality" => "sq"
+      }
+
       success_response =
         [
           %{
             "id" => "7000",
             "tags_list" => ["cool", "song"],
+            "media" => %{
+              "transcodings": [transcoding]
+            },
             "user" => %{
               username: "Bvzzi",
               permalink_url: "https://soundcloud.com/bvzzi"
@@ -29,11 +44,12 @@ defmodule Musikbot.TrackScout.TrackTest do
         get: fn _api, _headers, _opts ->
           {:ok, %HTTPoison.Response{status_code: 200, body: success_response}}
         end do
-        %{"id" => id, "permalink_url" => permalink_url} =
+        {:ok, %{"id" => id, "permalink_url" => permalink_url, "stream_url" => stream_url}} =
           Musikbot.TrackScout.Track.get_track_from_soundcloud(7000)
 
         assert id == "7000"
         assert permalink_url == "https://soundcloud.com/track/7000"
+        assert stream_url == "https://example-stream.com/"
       end
     end
 
@@ -42,57 +58,7 @@ defmodule Musikbot.TrackScout.TrackTest do
         get: fn _api, _headers, _opts ->
           {:error, %HTTPoison.Response{status_code: 404, body: nil}}
         end do
-        assert_raise RuntimeError, fn ->
-          Musikbot.TrackScout.Track.get_track_from_soundcloud(7000)
-        end
-      end
-    end
-  end
-
-  describe "get_track_with_stream_url" do
-    setup do
-      transcoding = %{
-        "url" => "https://example-stream.com/",
-        "preset" => "mp3_0_1",
-        "duration" => 139_886,
-        "snipped" => false,
-        "format" => %{
-          "protocol" => "progressive",
-          "mime_type" => "audio/mpeg"
-        },
-        "quality" => "sq"
-      }
-
-      track_api_response =
-        [
-          %{
-            "id" => "7000",
-            "tags_list" => ["cool", "song"],
-            "media" => %{
-              "transcodings" => [transcoding]
-            },
-            "user" => %{
-              username: "Bvzzi",
-              permalink_url: "https://soundcloud.com/bvzzi"
-            },
-            "permalink_url" => "https://soundcloud.com/track/7000"
-          }
-        ]
-        |> Poison.encode!()
-
-      {:ok, track_api_response: track_api_response}
-    end
-
-    test "should return the track with stream url", %{track_api_response: track_api_response} do
-      with_mock HTTPoison,
-        get: fn _api, _headers, _opts ->
-          {:ok, %HTTPoison.Response{status_code: 200, body: track_api_response}}
-        end do
-        %{"id" => id, "stream_url" => stream_url} =
-          Musikbot.TrackScout.Track.get_track_with_stream_url(7000)
-
-        assert id == "7000"
-        assert stream_url == "https://example-stream.com/"
+        {:error, "Something went wrong while fetching track 7000"} = Musikbot.TrackScout.Track.get_track_from_soundcloud(7000)
       end
     end
   end
