@@ -25,7 +25,7 @@ defmodule Musikbot.TrackScout.TrackTest do
             "id" => "7000",
             "tags_list" => ["cool", "song"],
             "media" => %{
-              "transcodings": [transcoding]
+              "transcodings" => [transcoding]
             },
             "user" => %{
               username: "Bvzzi",
