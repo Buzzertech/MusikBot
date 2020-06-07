@@ -29,7 +29,7 @@ defmodule Musikbot.TrackScout.Scout do
 
     case Track.get_track_from_soundcloud(random_track_id) do
       {:ok, track} ->
-        {:noreply, %{track_data: track}}
+        {:noreply, state |> Map.merge(%{track_data: track})}
 
       {:error, error} ->
         IO.puts(error)
@@ -41,5 +41,4 @@ defmodule Musikbot.TrackScout.Scout do
   def handle_call({:get_track_state}, _from, state) do
     {:reply, Map.fetch(state, :track_data), state}
   end
-
 end

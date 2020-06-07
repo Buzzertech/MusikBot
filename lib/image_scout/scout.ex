@@ -28,7 +28,7 @@ defmodule Musikbot.ImageScout.Scout do
   def handle_cast({:fetch_random_image}, state) do
     case Unsplash.fetch_image_from_unsplash() do
       {:ok, image_data} ->
-        {:noreply, %{image_data: image_data}}
+        {:noreply, state |> Map.merge(%{image_data: image_data})}
 
       {:error, error} ->
         IO.puts(error)
