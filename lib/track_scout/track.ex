@@ -15,7 +15,7 @@ defmodule Musikbot.TrackScout.Track do
     case format do
       %{"protocol" => "progressive", "mime_type" => "audio/mpeg"} ->
         true
-      _ ->
+      nil ->
         false
     end
   end
@@ -29,7 +29,7 @@ defmodule Musikbot.TrackScout.Track do
     |> put_stream_url_to_map(track)
   end
 
-  @spec get_track_from_soundcloud(number) :: Map.t()
+  @spec get_track_from_soundcloud(number) :: {:ok, Map.t()} | {:error, String.t()}
   def get_track_from_soundcloud(track_id) do
     headers = [
       params: [
@@ -52,7 +52,7 @@ defmodule Musikbot.TrackScout.Track do
 
         {:ok, track}
 
-      _ ->
+      {:error, _} ->
         {:error, "Something went wrong while fetching track #{track_id}"}
     end
   end

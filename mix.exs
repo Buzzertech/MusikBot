@@ -26,7 +26,11 @@ defmodule Musikbot.MixProject do
       {:gen_stage, "~> 1.0.0"},
       {:httpoison, "~> 1.6"},
       {:mock, "~> 0.3.0", only: [:test, :ci]},
-      {:poison, "~> 3.1"}
+      {:poison, "~> 3.1"},
+      {:mogrify, "~> 0.7.3"},
+      {:mustache, "~> 0.3.0"},
+      {:ffmpex, "~> 0.7.1"},
+      {:temp, "~> 0.4"}
     ]
   end
 end
