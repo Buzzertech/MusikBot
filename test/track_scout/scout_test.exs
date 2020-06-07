@@ -9,6 +9,8 @@ defmodule Musikbot.TrackScout.ScoutTest do
 
   describe "get_random_track" do
     setup %{} do
+      track_scout = start_supervised! Scout
+
       transcoding = %{
         "url" => "https://example-stream.com/",
         "preset" => "mp3_0_1",
@@ -38,10 +40,10 @@ defmodule Musikbot.TrackScout.ScoutTest do
         ]
         |> Poison.encode!()
 
-      {:ok, success_response: success_response}
+      %{success_response: success_response, track_scout: track_scout}
     end
 
-    test "should fetch the track for a random track id", %{success_response: success_response} do
+    test "should fetch the track for a random track id", %{success_response: success_response, track_scout: track_scout} do
       expected_result = %{
         "id" => "7000",
         "tags_list" => ["cool", "song"],
@@ -57,18 +59,10 @@ defmodule Musikbot.TrackScout.ScoutTest do
         get: fn _api, _headers, _opts ->
           {:ok, %HTTPoison.Response{status_code: 200, body: success_response}}
         end do
-        {:ok, track} = Scout.get_random_track()
+        Scout.fetch_random_track(track_scout)
+        track = Scout.get_random_track(track_scout)
         assert track == expected_result
       end
-    end
-
-    test "should handle failures with retries and return the error post exhaustion of retry limit" do
-      with_mock HTTPoison,
-        get: fn _api, _headers, _opts ->
-          {:error, "Not found"}
-        end do
-          assert {:error, "Unable to fetch track"} == Scout.get_random_track()
-        end
     end
   end
 end
