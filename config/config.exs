@@ -9,7 +9,8 @@ config :musikbot, :soundcloud,
 
 config :musikbot, :unsplash,
   origin: "https://api.unsplash.com",
-  get_random_photo_api: "/photos/random"
+  get_random_photo_api: "/photos/random",
+  client_id: System.get_env("UNSPLASH_ACCESS_KEY")
 
 config :musikbot, :misc,
   svg_template: """
